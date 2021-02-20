@@ -6,7 +6,10 @@ This file creates your application.
 """
 
 from app import app
+from app import mail
 from flask import render_template, request, redirect, url_for, flash
+from flask_mail import Message
+from .forms import ContactForm
 
 
 ###
@@ -28,6 +31,20 @@ def about():
 ###
 # The functions below should be applicable to all Flask apps.
 ###
+@app.route('/contact', methods = ['GET','POST'])
+def contact():
+    form = ContactForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            msg = Message(request.form['subject'],sender=(request.form['name'],request.form['email']),recipients=["to@example.com"])
+            msg.body = request.form['message']
+            mail.send(msg)
+            flash ('Congratulations!!! Your email was successfully sent.')
+            return redirect(url_for('home'))
+        else:
+            flash(flash_errors(form))
+        
+    return render_template('contact.html', form = form)
 
 
 # Flash errors from the form if validation fails
